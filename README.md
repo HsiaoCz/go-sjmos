@@ -131,3 +131,55 @@
 
 抽象工厂方法在产品固定的时候，是符合开闭的
 但一旦对产品结构进行扩展，就完全不符合开闭原则了
+
+### 4、单例模式
+
+单例模式要解决的问题是：
+保证一个类永远只能有一个对象，且该对象的功能依然能被其他模块使用
+单例模式的饿汉式：在没有获取单例的时候就已经分配内存了
+单例模式的懒汉式：在获取的时候才分配内存
+
+```go
+var instance *singleton
+
+func GetInstance()*singleton{
+    // 只有首次GetInstance方法被调用才会产生单例对象
+    if instance==nil{
+        instance=new(singleton)
+        return instance
+    }
+    return instance
+}
+
+// 但这样会存在一个问题 并发不安全 ，当有两个goroutine同时访问的时候，会造成内存泄漏
+// 一种方法是加锁
+// 但是加锁又会造成性能问题
+// 可以考虑使用原子操作
+```
+
+```go
+var instanced uint32
+
+func GetInstance()*singleton{
+  if atomic.LoadUint32(&instanced==1){
+    return instance
+  }
+  return instance
+}
+```
+
+当然还可以使用 once
+保证一个操作只执行一次
+
+```go
+var once sync.Once
+
+func GetInstance()*singleton{
+    once.Do(func{
+        instance=new(singleton)
+    })
+}
+```
+
+单例模式什么时候来使用
+一个系统中只能有一个实例可以使用单例
